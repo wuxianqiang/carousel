@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>轮播图</title>
+    <style>
+        html,
+        body,
+        div,
+        img {
+            margin: 0;
+            padding: 0;
+        }
+
+        ul,
+        li {
+            list-style: none;
+        }
+
+        img {
+            border: none;
+        }
+
+        #banner {
+            position: relative;
+            width: 800px;
+            height: 300px;
+            margin: 50px auto;
+        }
+
+        .bannerInner {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+        }
+
+        .bannerInner img {
+            display: none;
+            width: 100%;
+            height: 100%;
+        }
+
+        .bannerInner img.select {
+            display: inline-block;
+            opacity: 1;
+        }
+
+        .bannerTip {
+            position: absolute;
+            z-index: 10;
+            bottom: 15px;
+            right: 50px;
+            overflow: hidden;
+        }
+
+        .bannerTip li {
+            float: left;
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            margin-right: 15px;
+            background-color: gainsboro;
+            cursor: pointer;
+            font-size: 12px;
+            text-align: center;
+            line-height: 15px;
+            color: #999;
+        }
+
+        .bannerTip li.bg {
+            background-color: orangered;
+            color: white;
+        }
+
+        #banner a {
+            position: absolute;
+            width: 35px;
+            height: 45px;
+            z-index: 10;
+            top: 50%;
+            margin-top: -20px;
+            opacity: .5;
+            background: url("img/pre.png");
+        }
+
+        #banner a.bannerLeft {
+            left: 20px;
+            background-position: 0 0;
+        }
+
+        #banner a.bannerRight {
+            right: 20px;
+            background-position: -50px 0;
+        }
+
+        #banner a:hover {
+            opacity: 1;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="banner">
+        <div class="bannerInner">
+            <img class="select" src="img/0.jpg" alt="">
+            <img src="img/1.jpg" alt="">
+            <img src="img/2.jpg" alt="">
+            <img src="img/3.jpg" alt="">
+            <img src="img/4.jpg" alt="">
+        </div>
+        <ul class="bannerTip">
+            <li class="bg">1</li>
+            <li>2</li>
+            <li>3</li>
+            <li>4</li>
+            <li>5</li>
+        </ul>
+        <a href="javascript:;" class="bannerLeft"></a>
+        <a href="javascript:;" class="bannerRight"></a>
+    </div>
+
+    <script>
+        var banner = document.getElementById('banner');
+        var bannerTip = banner.getElementsByClassName("bannerTip")[0];
+        var bannerInner = banner.getElementsByClassName("bannerInner")[0];
+        var imgList = bannerInner.getElementsByTagName("img");
+        var liList = bannerTip.getElementsByTagName("li");
+        var bannerLeft = banner.getElementsByClassName("bannerLeft")[0];
+        var bannerRight = banner.getElementsByClassName("bannerRight")[0];
+
+        var count = 0;
+        for (var i = 0; i < liList.length; i++) {
+            liList[i].index = i;
+            liList[i].onclick = function () {
+                count = this.index;
+                change()
+            }
+        }
+
+        function change() {
+            for (var k = 0; k < liList.length; k++) {
+                liList[k].className = ""
+                imgList[k].className = ""
+            }
+            liList[count].className = "bg"
+            imgList[count].className = "select"
+        }
+        bannerLeft.onclick = function () {
+//注意：这个函数是点击的时候执行的，当点击时，发现索引是0，就要跳到最后一张
+            if(count === 0){
+                count = liList.length;
+            }
+            count--;
+            change()
+        }
+        bannerRight.onclick = function () {
+//注意：这个函数是点击的时候执行的，当点击时，发现索引是最后一张，就要跳到第一张
+            if(count === liList.length-1){
+                count = -1;
+            }
+            count++;
+            change()
+        }
+    </script>
+</body>
+
+</html>
+<script>
+</script>
