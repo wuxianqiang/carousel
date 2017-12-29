@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>QQ音乐</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        ul li {
+            list-style: none;
+        }
+
+        .banner {
+            position: relative;
+            margin: 60px auto;
+            width: 720px;
+            height: 288px;
+            overflow: hidden;
+        }
+
+        .bannerInner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 288px;
+            width: 1440px;
+        }
+
+        .bannerInner li {
+            float: left;
+            width: 720px;
+            height: 288px;
+            background: url("img/loading.gif") no-repeat center center#f4f4f4;
+        }
+
+        .bannerInner a {
+            display: inline-block;
+            width: 720px;
+            height: 288px;
+        }
+
+        .bannerInner img {
+            display: inline-block;
+            width: 720px;
+            height: 288px;
+            opacity: 0;
+        }
+
+        .bannerTip {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .bannerTip li.selected {
+            background: #fff;
+        }
+
+        .bannerTip li {
+            float: left;
+            margin-right: 10px;
+            border-radius: 50%;
+            width: 10px;
+            height: 10px;
+            background: rgba(144, 144, 144, .8);
+            cursor: pointer;
+        }
+
+        .bannerTip li:last-child {
+            margin-right: 0;
+        }
+
+        .bannerArrow {
+            display: none;
+            position: absolute;
+            top: 50%;
+            width: 100%;
+            transform: translateY(-50%);
+        }
+
+        .bannerArrow a {
+            display: block;
+            width: 20px;
+            height: 40px;
+            line-height: 40px;
+            text-align: center;
+            text-decoration: none;
+            color: #fff;
+            background: rgba(144, 144, 144, .5);
+            float: left;
+        }
+
+        .bannerArrow a:hover {
+            background: rgba(144, 144, 144, .8);
+        }
+
+        .bannerArrow a:last-child {
+            float: right;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="banner" id="banner">
+        <ul class="bannerInner" id="bannerInner">
+        </ul>
+        <ul class="bannerTip" id="bannerTip">
+        </ul>
+        <span class="bannerArrow" id="bannerArrow">
+            <a href="javascript:;" id="arrowLeft"><</a>
+            <a href="javascript:;" id="arrowRight">></a>
+        </span>
+    </div>
+
+    <script src="js/tween.js"></script>
+    
+    <script>
+        let slider = null;
+        let banner = document.getElementById('banner');
+        let bannerInner = document.getElementById('bannerInner');
+        let bannerTip = document.getElementById('bannerTip');
+        let img = bannerInner.getElementsByTagName("img");
+        let lis = bannerTip.getElementsByTagName("li");
+        let bannerArrow = document.getElementById('bannerArrow');
+        let arrowLeft = document.getElementById('arrowLeft');
+        let arrowRight = document.getElementById('arrowRight');
+        let step = 0;
+        let timer = 0;
+        let duration = 3000;
+        const W = banner.offsetWidth;
+        let isOk = true;
+
+        function fn(data) {
+            slider = data.data.slider;
+            if (slider.length) {
+                carouse.bindHtml(slider).lazyImage(img).playBanner().clickEvent().pageChange()
+            }
+        }
+        let carouse = {
+            bindHtml(data) {
+                let str1 = '',
+                    str2 = '';
+                for (let i = 0; i < data.length; i++) {
+                    let current = data[i];
+                    str1 +=
+                        `
+                            <li>
+                                <a href="${current.linkUrl}">
+                                    <img src="" alt="" data-src="${current.picUrl}">
+                                </a>
+                            </li>
+                            `;
+                    str2 += i === 0 ? '<li class="selected"></li>' : '<li></li>';
+                }
+                str1 +=
+                    `
+                        <li>
+                            <a href="${data[0].linkUrl}">
+                                <img src="" alt="" data-src="${data[0].picUrl}">
+                            </a>
+                        </li>
+                        `;
+
+                setCss(bannerInner, "width", W * (data.length + 1));
+                bannerInner.innerHTML = str1;
+                bannerTip.innerHTML = str2;
+                return this;
+            },
+            lazyImage(img) {
+                for (const item of img) {
+                    let oImg = new Image;
+                    oImg.src = item.dataset.src;
+                    oImg.onload = function () {
+                        item.src = this.src;
+                        tween(item, {
+                            opacity: 1
+                        }, 500);
+                    }
+                }
+                return this;
+            },
+            playBanner() {
+                timer = setInterval(() => {
+                    this.moveBanner()
+                }, duration);
+                return this;
+            },
+            moveBanner() {
+                if (isOk) {
+                    isOk = false;
+                    if (step === img.length - 1) {
+                        setCss(bannerInner, "left", 0);
+                        step = 0;
+                    }
+                    step++;
+                    tween(bannerInner, {
+                        left: -step * W
+                    }, 500, function () {
+                        isOk = true;
+                    });
+                    this.focusChange();
+                }
+            },
+            focusChange() {
+                let temp = step === img.length - 1 ? 0 : step;
+                for (let i = 0; i < lis.length; i++) {
+                    let current = lis[i];
+                    if (i === temp) {
+                        current.className = "selected";
+                    } else {
+                        current.className = "";
+                    }
+                }
+            },
+            clickEvent() {
+                banner.onmouseenter = function () {
+                    window.clearInterval(timer);
+                    bannerArrow.style.display = "block"
+                }
+                banner.onmouseleave = () => {
+                    bannerArrow.style.display = "none"
+                    timer = setInterval(() => {
+                        this.moveBanner()
+                    }, duration);
+                }
+                this.arrowChange();
+                this.liChange();
+                return this;
+            },
+            arrowChange() {
+                arrowLeft.onclick = () => {
+                    if (isOk) {
+                        isOk = false;
+                        if (step === 0) {
+                            step = img.length - 1;
+                        }
+                        step--;
+                        tween(bannerInner, {
+                            left: -step * W
+                        }, 500, function () {
+                            isOk = true;
+                        });
+                        this.focusChange();
+                    }
+                }
+                arrowRight.onclick = () => {
+                    this.moveBanner()
+                }
+            },
+            liChange() {
+                for (let i = 0; i < lis.length; i++) {
+                    let current = lis[i];
+                    current.onclick = () => {
+                        if (isOk) {
+                            isOk = false;
+                            step = i;
+                            tween(bannerInner, {
+                                left: -step * W
+                            }, 500, function () {
+                                isOk = true;
+                            });
+                            this.focusChange();
+                        }
+                    }
+                }
+            },
+            pageChange() {
+                document.onvisibilitychange = () => {
+                    if (document.visibilityState === "hidden") {
+                        window.clearInterval(timer);
+                    } else {
+                        timer = setInterval(() => {
+                            this.moveBanner()
+                        }, duration);
+                    }
+                }
+            }
+        }
+    </script>
+
+    <script src="https://c.y.qq.com/musichall/fcgi-bin/fcg_yqqhomepagerecommend.fcg?g_tk=5381&uin=0&format=json&inCharset=utf-8&outCharset=utf-8&notice=0&platform=h5&needNewCode=1&_=1514474602351&jsonpCallback=fn"></script>
+</body>
+
+</html>
